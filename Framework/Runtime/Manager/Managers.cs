@@ -46,7 +46,7 @@ public static class Managers
 
     /// <summary> 与后台请求管理 </summary>
     public static HttpRequestManager HttpRequestManager => HttpRequestManager.Instance;
-    
+
     /// <summary> Addressables资源管理 </summary>
     public static AddressablesManager AddressablesManager => AddressablesManager.Instance;
 }
