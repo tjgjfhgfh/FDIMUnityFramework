@@ -37,8 +37,8 @@ public class ConfigManager : SingletonPatternBase<ConfigManager>
                     _gameData = Serializer.Deserialize<GameData>(ms);
                 }
 
-                Debug.Log(
-                    $"[Runtime] Protobuf 反序列化后 SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
+                //Debug.Log(
+                //    $"[Runtime] Protobuf 反序列化后 SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
             }
             catch (Exception e)
             {
@@ -58,7 +58,7 @@ public class ConfigManager : SingletonPatternBase<ConfigManager>
             try
             {
                 _gameData = JsonMapper.ToObject<GameData>(ta.text);
-                Debug.Log($"[Runtime] JSON 反序列化后 SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
+                //Debug.Log($"[Runtime] JSON 反序列化后 SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
             }
             catch (Exception e)
             {
