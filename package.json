@@ -5,5 +5,13 @@
  "description": "A framework for Unity.",
  "dependencies": {
     "com.unity.addressables": "1.21.19"
-  }
+  },
+    
+   "samples": [
+    {
+     "displayName": "WebsocketDemo",
+      "description": "A minimal scene showing how to use Websocket.",
+      "path": "Samples/WebsocketDemo"
+    }
+  ]
 }
