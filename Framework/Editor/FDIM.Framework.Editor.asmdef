@@ -1,11 +1,13 @@
 {
     "name": "FDIM.Framework.Editor",
     "rootNamespace": "",
-    "references": [],
-    "includePlatforms": [],
-    "excludePlatforms": [
+    "references": [
+        "GUID:4ddce6da73110f64e9237711632c019b"
+    ],
+    "includePlatforms": [
         "Editor"
     ],
+    "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
