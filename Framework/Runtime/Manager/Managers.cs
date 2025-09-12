@@ -9,47 +9,47 @@ namespace FDIM.Framework
     }
     
     /// <summary>
-    /// ͳһ��ڣ������õ���Ŀ�����еĹ�����
+    /// 模块统一管理
     /// </summary>
     public static class Managers
     {
-        /// <summary> ��Ƶ������ </summary>
+        /// <summary> 音频管理器 </summary>
         public static AudioManager AudioManager => AudioManager.Instance;
     
-        /// <summary> �¼����� </summary>
+        /// <summary> 事件管理 </summary>
         public static EventCenterManager EventCenterManager => EventCenterManager.Instance;
     
-        /// <summary> ����������� </summary>
+        /// <summary> 输入管理 </summary>
         public static InputKeysManager InputKeysManager => InputKeysManager.Instance;
     
-        /// <summary> �������ع��� </summary>
+        /// <summary> 加载场景管理 </summary>
         public static LoadSceneManager LoadSceneManager => LoadSceneManager.Instance;
     
-        /// <summary> ��־���Թ��� </summary>
+        /// <summary> 日志管理 </summary>
         public static LogMessage LogMessage => LogMessage.Instance;
     
-        /// <summary> MonoBehaviour ���ȹ����Update �ɷ�����Э�̿����� </summary>
+        /// <summary> Mono管理 </summary>
         public static MonoManager MonoManager => MonoManager.Instance;
     
-        /// <summary> ����ع��� </summary>
+        /// <summary> 对象此管理 </summary>
         public static ObjectPoolsManager ObjectPoolsManagerPools => ObjectPoolsManager.Instance;
-    
-        /// <summary> ��Դ���ع��� </summary>
+
+        /// <summary> Resources加载管理</summary>
         public static ResourcesManager ResourcesManager => ResourcesManager.Instance;
     
-        /// <summary> ��ʱ������ </summary>
+        /// <summary> 时间管理器 </summary>
         public static TimerManager TimerManager => TimerManager.Instance;
     
-        /// <summary> UI ������� </summary>
+        /// <summary> UI 管理 </summary>
         public static UIManager UIManager => UIManager.Instance;
     
-        /// <summary> ���ñ���� </summary>
+        /// <summary> 配置表管理 </summary>
         public static ConfigManager ConfigManager => ConfigManager.Instance;
     
-        /// <summary> ���̨������� </summary>
+        /// <summary> 后台请求管理 </summary>
         public static HttpRequestManager HttpRequestManager => HttpRequestManager.Instance;
     
-        /// <summary> Addressables��Դ���� </summary>
+        /// <summary> Addressables加载管理 </summary>
         public static AddressablesManager AddressablesManager => AddressablesManager.Instance;
     }
 }
