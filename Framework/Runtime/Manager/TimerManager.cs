@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+namespace FDIM.Framework
 
-namespace XH
 {
     public class TimerManager
     {

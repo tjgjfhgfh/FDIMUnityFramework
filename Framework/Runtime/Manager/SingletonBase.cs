@@ -1,6 +1,5 @@
-using UnityEngine;
-
-namespace Txx
+﻿using UnityEngine;
+namespace FDIM.Framework
 {
     public class SingletonBase<T> where T : new()
     {

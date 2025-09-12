@@ -1,133 +1,137 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using LitJson; // Èç¹ûÄã»¹ÏëÓÃ LitJson ·´ÐòÁÐ»¯
-
-public static class UnityAsyncExtensions
+using LitJson; 
+namespace FDIM.Framework
 {
-    public static TaskAwaiter<UnityWebRequest> GetAwaiter(this UnityWebRequestAsyncOperation op)
+    // ï¿½ï¿½ï¿½ï¿½ã»¹ï¿½ï¿½ï¿½ï¿½ LitJson ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½
+    
+    public static class UnityAsyncExtensions
     {
-        var tcs = new TaskCompletionSource<UnityWebRequest>();
-        op.completed += _ => tcs.SetResult(op.webRequest);
-        return tcs.Task.GetAwaiter();
-    }
-}
-
-/// <summary>
-/// ¸ºÔðËùÓÐ HTTP ÇëÇó£ºGET/POST/PUT/DELETE
-///   ¡ª Ö±½ÓÊ¹ÓÃ´«ÈëµÄ URL£¬ÎÞÐè BaseUrl
-///   ¡ª ÐòÁÐ»¯·´ÐòÁÐ»¯Ê¹ÓÃ LitJson
-/// </summary>
-public class HttpRequestManager : SingletonPatternBase<HttpRequestManager>
-{
-    [Tooltip("ÇëÇó³¬Ê±ÃëÊý£¬0 ±íÊ¾²»³¬Ê±¡£")] public int TimeoutSeconds = 10;
-
-    #region ¹«¹²ÇëÇó·½·¨
-
-    public async Task<T> GetAsync<T>(string url, Dictionary<string, string> query = null)
-    {
-        url = AppendQuery(url, query);
-        using var req = UnityWebRequest.Get(url);
-        ConfigureRequest(req);
-        await req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-            throw new Exception($"[GET] {url} Ê§°Ü£º{req.error}");
-
-        Debug.Log($"[HTTP Success] GET {url}\nResponse: {req.downloadHandler.text}");
-        return JsonMapper.ToObject<T>(req.downloadHandler.text);
-    }
-
-    public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body)
-    {
-        string json = JsonMapper.ToJson(body);
-        using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST)
+        public static TaskAwaiter<UnityWebRequest> GetAwaiter(this UnityWebRequestAsyncOperation op)
         {
-            uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)),
-            downloadHandler = new DownloadHandlerBuffer()
-        };
-        ConfigureRequest(req, includeJsonHeader: true);
-        await req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-            throw new Exception($"[POST] {url} Ê§°Ü£º{req.error}");
-
-        Debug.Log($"[HTTP Success] POST {url}\nResponse: {req.downloadHandler.text}");
-        return JsonMapper.ToObject<TResponse>(req.downloadHandler.text);
-    }
-
-    public async Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest body)
-    {
-        string json = JsonMapper.ToJson(body);
-        using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPUT)
-        {
-            uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)),
-            downloadHandler = new DownloadHandlerBuffer()
-        };
-        ConfigureRequest(req, includeJsonHeader: true);
-        await req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-            throw new Exception($"[PUT] {url} Ê§°Ü£º{req.error}");
-
-        Debug.Log($"[HTTP Success] PUT {url}\nResponse: {req.downloadHandler.text}");
-        return JsonMapper.ToObject<TResponse>(req.downloadHandler.text);
-    }
-
-    public async Task<T> DeleteAsync<T>(string url, Dictionary<string, string> query = null)
-    {
-        url = AppendQuery(url, query);
-        using var req = UnityWebRequest.Delete(url);
-        ConfigureRequest(req);
-        await req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-            throw new Exception($"[DELETE] {url} Ê§°Ü£º{req.error}");
-
-        Debug.Log($"[HTTP Success] DELETE {url}\nResponse: {req.downloadHandler.text}");
-        return JsonMapper.ToObject<T>(req.downloadHandler.text);
-    }
-
-    #endregion
-
-    #region Ë½ÓÐ¹¤¾ß
-
-    private void ConfigureRequest(UnityWebRequest req, bool includeJsonHeader = false)
-    {
-        if (includeJsonHeader)
-            req.SetRequestHeader("Content-Type", "application/json");
-
-        // Èç¹ûÐèÒª¼øÈ¨£¬¿ÉÒÔÔÚÕâÀï¼Ó£º
-        // var token = PlayerPrefs.GetString("AuthToken", "");
-        // if (!string.IsNullOrEmpty(token))
-        //     req.SetRequestHeader("Authorization", $"Bearer {token}");
-
-        req.timeout = TimeoutSeconds;
-    }
-
-    private string AppendQuery(string url, Dictionary<string, string> query)
-    {
-        if (query == null || query.Count == 0)
-            return url;
-
-        var sb = new StringBuilder(url);
-        sb.Append(url.Contains("?") ? '&' : '?');
-        bool first = true;
-        foreach (var kv in query)
-        {
-            if (!first) sb.Append('&');
-            first = false;
-            sb.Append(UnityWebRequest.EscapeURL(kv.Key))
-                .Append('=')
-                .Append(UnityWebRequest.EscapeURL(kv.Value));
+            var tcs = new TaskCompletionSource<UnityWebRequest>();
+            op.completed += _ => tcs.SetResult(op.webRequest);
+            return tcs.Task.GetAwaiter();
         }
-
-        return sb.ToString();
     }
-
-    #endregion
+    
+    /// <summary>
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HTTP ï¿½ï¿½ï¿½ï¿½GET/POST/PUT/DELETE
+    ///   ï¿½ï¿½ Ö±ï¿½ï¿½Ê¹ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ URLï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ BaseUrl
+    ///   ï¿½ï¿½ ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½Ê¹ï¿½ï¿½ LitJson
+    /// </summary>
+    public class HttpRequestManager : SingletonPatternBase<HttpRequestManager>
+    {
+        [Tooltip("ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½")] public int TimeoutSeconds = 10;
+    
+        #region ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó·½·ï¿½
+    
+        public async Task<T> GetAsync<T>(string url, Dictionary<string, string> query = null)
+        {
+            url = AppendQuery(url, query);
+            using var req = UnityWebRequest.Get(url);
+            ConfigureRequest(req);
+            await req.SendWebRequest();
+    
+            if (req.result != UnityWebRequest.Result.Success)
+                throw new Exception($"[GET] {url} Ê§ï¿½Ü£ï¿½{req.error}");
+    
+            Debug.Log($"[HTTP Success] GET {url}\nResponse: {req.downloadHandler.text}");
+            return JsonMapper.ToObject<T>(req.downloadHandler.text);
+        }
+    
+        public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body)
+        {
+            string json = JsonMapper.ToJson(body);
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST)
+            {
+                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)),
+                downloadHandler = new DownloadHandlerBuffer()
+            };
+            ConfigureRequest(req, includeJsonHeader: true);
+            await req.SendWebRequest();
+    
+            if (req.result != UnityWebRequest.Result.Success)
+                throw new Exception($"[POST] {url} Ê§ï¿½Ü£ï¿½{req.error}");
+    
+            Debug.Log($"[HTTP Success] POST {url}\nResponse: {req.downloadHandler.text}");
+            return JsonMapper.ToObject<TResponse>(req.downloadHandler.text);
+        }
+    
+        public async Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest body)
+        {
+            string json = JsonMapper.ToJson(body);
+            using var req = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPUT)
+            {
+                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)),
+                downloadHandler = new DownloadHandlerBuffer()
+            };
+            ConfigureRequest(req, includeJsonHeader: true);
+            await req.SendWebRequest();
+    
+            if (req.result != UnityWebRequest.Result.Success)
+                throw new Exception($"[PUT] {url} Ê§ï¿½Ü£ï¿½{req.error}");
+    
+            Debug.Log($"[HTTP Success] PUT {url}\nResponse: {req.downloadHandler.text}");
+            return JsonMapper.ToObject<TResponse>(req.downloadHandler.text);
+        }
+    
+        public async Task<T> DeleteAsync<T>(string url, Dictionary<string, string> query = null)
+        {
+            url = AppendQuery(url, query);
+            using var req = UnityWebRequest.Delete(url);
+            ConfigureRequest(req);
+            await req.SendWebRequest();
+    
+            if (req.result != UnityWebRequest.Result.Success)
+                throw new Exception($"[DELETE] {url} Ê§ï¿½Ü£ï¿½{req.error}");
+    
+            Debug.Log($"[HTTP Success] DELETE {url}\nResponse: {req.downloadHandler.text}");
+            return JsonMapper.ToObject<T>(req.downloadHandler.text);
+        }
+    
+        #endregion
+    
+        #region Ë½ï¿½Ð¹ï¿½ï¿½ï¿½
+    
+        private void ConfigureRequest(UnityWebRequest req, bool includeJsonHeader = false)
+        {
+            if (includeJsonHeader)
+                req.SetRequestHeader("Content-Type", "application/json");
+    
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½È¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó£ï¿½
+            // var token = PlayerPrefs.GetString("AuthToken", "");
+            // if (!string.IsNullOrEmpty(token))
+            //     req.SetRequestHeader("Authorization", $"Bearer {token}");
+    
+            req.timeout = TimeoutSeconds;
+        }
+    
+        private string AppendQuery(string url, Dictionary<string, string> query)
+        {
+            if (query == null || query.Count == 0)
+                return url;
+    
+            var sb = new StringBuilder(url);
+            sb.Append(url.Contains("?") ? '&' : '?');
+            bool first = true;
+            foreach (var kv in query)
+            {
+                if (!first) sb.Append('&');
+                first = false;
+                sb.Append(UnityWebRequest.EscapeURL(kv.Key))
+                    .Append('=')
+                    .Append(UnityWebRequest.EscapeURL(kv.Value));
+            }
+    
+            return sb.ToString();
+        }
+    
+        #endregion
+    }
 }

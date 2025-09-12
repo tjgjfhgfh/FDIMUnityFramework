@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,7 +7,6 @@ using UnityEngine.UI;
 /// <summary>
 /// UI管理器
 /// </summary>
-
 namespace FDIM.Framework
 {
     public class UIManager : SingletonPatternMonoAutoBase_DontDestroyOnLoad<UIManager>

@@ -1,53 +1,55 @@
-using FDIM.Framework;
-using XH;
+ï»¿using FDIM.Framework;
 
-//½Ó¿Ú¿ÉÀ©³ä
-public interface IManager
+namespace FDIM.Framework
 {
-    public void Init();
-}
-
-/// <summary>
-/// Í³Ò»Èë¿Ú£º¿ìËÙÄÃµ½ÏîÄ¿ÀïËùÓĞµÄ¹ÜÀíÆ÷
-/// </summary>
-public static class Managers
-{
-    /// <summary> ÒôÆµ¹ÜÀíÆ÷ </summary>
-    public static AudioManager AudioManager => AudioManager.Instance;
-
-    /// <summary> ÊÂ¼şÖĞĞÄ </summary>
-    public static EventCenterManager EventCenterManager => EventCenterManager.Instance;
-
-    /// <summary> °´¼üÊäÈë¹ÜÀí </summary>
-    public static InputKeysManager InputKeysManager => InputKeysManager.Instance;
-
-    /// <summary> ³¡¾°¼ÓÔØ¹ÜÀí </summary>
-    public static LoadSceneManager LoadSceneManager => LoadSceneManager.Instance;
-
-    /// <summary> ÈÕÖ¾µ÷ÊÔ¹ÜÀí </summary>
-    public static LogMessage LogMessage => LogMessage.Instance;
-
-    /// <summary> MonoBehaviour µ÷¶È¹ÜÀí£¨Update ÅÉ·¢£©¼°Ğ­³Ì¿ØÖÆÆ÷ </summary>
-    public static MonoManager MonoManager => MonoManager.Instance;
-
-    /// <summary> ¶ÔÏó³Ø¹ÜÀí </summary>
-    public static ObjectPoolsManager ObjectPoolsManagerPools => ObjectPoolsManager.Instance;
-
-    /// <summary> ×ÊÔ´¼ÓÔØ¹ÜÀí </summary>
-    public static ResourcesManager ResourcesManager => ResourcesManager.Instance;
-
-    /// <summary> ¼ÆÊ±Æ÷¹ÜÀí </summary>
-    public static TimerManager TimerManager => TimerManager.Instance;
-
-    /// <summary> UI ½çÃæ¹ÜÀí </summary>
-    public static UIManager UIManager => UIManager.Instance;
-
-    /// <summary> ÅäÖÃ±í¹ÜÀí </summary>
-    public static ConfigManager ConfigManager => ConfigManager.Instance;
-
-    /// <summary> ÓëºóÌ¨ÇëÇó¹ÜÀí </summary>
-    public static HttpRequestManager HttpRequestManager => HttpRequestManager.Instance;
-
-    /// <summary> Addressables×ÊÔ´¹ÜÀí </summary>
-    public static AddressablesManager AddressablesManager => AddressablesManager.Instance;
+    //ï¿½Ó¿Ú¿ï¿½ï¿½ï¿½ï¿½ï¿½
+    public interface IManager
+    {
+        public void Init();
+    }
+    
+    /// <summary>
+    /// Í³Ò»ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ĞµÄ¹ï¿½ï¿½ï¿½ï¿½ï¿½
+    /// </summary>
+    public static class Managers
+    {
+        /// <summary> ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static AudioManager AudioManager => AudioManager.Instance;
+    
+        /// <summary> ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static EventCenterManager EventCenterManager => EventCenterManager.Instance;
+    
+        /// <summary> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static InputKeysManager InputKeysManager => InputKeysManager.Instance;
+    
+        /// <summary> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½ï¿½ï¿½ </summary>
+        public static LoadSceneManager LoadSceneManager => LoadSceneManager.Instance;
+    
+        /// <summary> ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½ </summary>
+        public static LogMessage LogMessage => LogMessage.Instance;
+    
+        /// <summary> MonoBehaviour ï¿½ï¿½ï¿½È¹ï¿½ï¿½ï¿½ï¿½Update ï¿½É·ï¿½ï¿½ï¿½ï¿½ï¿½Ğ­ï¿½Ì¿ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static MonoManager MonoManager => MonoManager.Instance;
+    
+        /// <summary> ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½ï¿½ï¿½ </summary>
+        public static ObjectPoolsManager ObjectPoolsManagerPools => ObjectPoolsManager.Instance;
+    
+        /// <summary> ï¿½ï¿½Ô´ï¿½ï¿½ï¿½Ø¹ï¿½ï¿½ï¿½ </summary>
+        public static ResourcesManager ResourcesManager => ResourcesManager.Instance;
+    
+        /// <summary> ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static TimerManager TimerManager => TimerManager.Instance;
+    
+        /// <summary> UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static UIManager UIManager => UIManager.Instance;
+    
+        /// <summary> ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static ConfigManager ConfigManager => ConfigManager.Instance;
+    
+        /// <summary> ï¿½ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static HttpRequestManager HttpRequestManager => HttpRequestManager.Instance;
+    
+        /// <summary> Addressablesï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ </summary>
+        public static AddressablesManager AddressablesManager => AddressablesManager.Instance;
+    }
 }

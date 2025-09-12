@@ -1,4 +1,4 @@
-using LitJson;
+ï»¿using LitJson;
 using ProtoBuf;
 using System;
 using System.Collections;
@@ -7,174 +7,177 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-public class ConfigManager : SingletonPatternBase<ConfigManager>
+namespace FDIM.Framework
 {
-    [Header("Êý¾Ý¸ñÊ½ÇÐ»»")] [Tooltip("¹´Ñ¡ºóÓÅÏÈ´Ó .bytes (Protobuf) ½âÎö£»·ñÔò×ß JSON ½âÎö")]
-    public bool UseBinary = true;
-
-    private GameData _gameData;
-    private readonly Dictionary<Type, IList> _listCache = new();
-    private readonly Dictionary<Type, object> _intIdCache = new();
-
-    public void Init(TextAsset  asset)
+    public class ConfigManager : SingletonPatternBase<ConfigManager>
     {
-        Debug.Log($"ConfigManager: ¿ªÊ¼³õÊ¼»¯ (UseBinary={UseBinary})");
-        var  ta=asset;
-        // 1. ·´ÐòÁÐ»¯ JSON »ò Protobuf
-        if (UseBinary)
+        [Header("ï¿½ï¿½ï¿½Ý¸ï¿½Ê½ï¿½Ð»ï¿½")] [Tooltip("ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ .bytes (Protobuf) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ JSON ï¿½ï¿½ï¿½ï¿½")]
+        public bool UseBinary = true;
+    
+        private GameData _gameData;
+        private readonly Dictionary<Type, IList> _listCache = new();
+        private readonly Dictionary<Type, object> _intIdCache = new();
+    
+        public void Init(TextAsset  asset)
         {
-            if (ta == null)
+            Debug.Log($"ConfigManager: ï¿½ï¿½Ê¼ï¿½ï¿½Ê¼ï¿½ï¿½ (UseBinary={UseBinary})");
+            var  ta=asset;
+            // 1. ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ JSON ï¿½ï¿½ Protobuf
+            if (UseBinary)
             {
-                Debug.LogError("ConfigManager: ÕÒ²»µ½ GameData.bytes");
-                return;
-            }
-
-            Debug.Log($"[Runtime] Loaded bytes length = {ta.bytes.Length}");
-            try
-            {
-                using (var ms = new System.IO.MemoryStream(ta.bytes))
+                if (ta == null)
                 {
-                    _gameData = Serializer.Deserialize<GameData>(ms);
+                    Debug.LogError("ConfigManager: ï¿½Ò²ï¿½ï¿½ï¿½ GameData.bytes");
+                    return;
                 }
-
-                //Debug.Log(
-                //    $"[Runtime] Protobuf ·´ÐòÁÐ»¯ºó SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"ConfigManager: Protobuf ·´ÐòÁÐ»¯Ê§°Ü£º{e}");
-                return;
-            }
-        }
-        else
-        {
-            if (ta == null)
-            {
-                Debug.LogError("ConfigManager: ÕÒ²»µ½ GameData_Json.json");
-                return;
-            }
-
-            Debug.Log($"[Runtime] Loaded JSON length = {ta.text.Length}");
-            try
-            {
-                _gameData = JsonMapper.ToObject<GameData>(ta.text);
-                //Debug.Log($"[Runtime] JSON ·´ÐòÁÐ»¯ºó SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"ConfigManager: JSON ·´ÐòÁÐ»¯Ê§°Ü£º{e}");
-                return;
-            }
-        }
-
-        // 2. ¹¹½¨»º´æÓëË÷Òý
-        BuildCaches();
-    }
-
-    private void BuildCaches()
-    {
-        _listCache.Clear();
-        _intIdCache.Clear();
-        int tableCount = 0;
-
-        Type dataType = typeof(GameData);
-
-        // Ö§³Ö public ÊôÐÔ ºÍ public ×Ö¶Î
-        IEnumerable<MemberInfo> members = new List<MemberInfo>()
-            .Concat(dataType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            .Concat(dataType.GetFields(BindingFlags.Public | BindingFlags.Instance));
-
-        foreach (var m in members)
-        {
-            Type memberType;
-            object value;
-            if (m is PropertyInfo pi)
-            {
-                memberType = pi.PropertyType;
-                value = pi.GetValue(_gameData);
-            }
-            else if (m is FieldInfo fi)
-            {
-                memberType = fi.FieldType;
-                value = fi.GetValue(_gameData);
-            }
-            else continue;
-
-            // Ö»´¦Àí List<>
-            if (!memberType.IsGenericType || memberType.GetGenericTypeDefinition() != typeof(List<>))
-                continue;
-
-            var list = value as IList;
-            if (list == null) continue;
-
-            Type itemType = memberType.GetGenericArguments()[0];
-            _listCache[itemType] = list;
-            tableCount++;
-
-            // ¡ª¡ª ÏÈÕÒ public ÊôÐÔ Id£¬ÔÙÕÒ public ×Ö¶Î Id ¡ª¡ª 
-            var idProp = itemType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)
-                         ?? itemType.GetProperty("id", BindingFlags.Public | BindingFlags.Instance);
-            var idField = itemType.GetField("Id", BindingFlags.Public | BindingFlags.Instance)
-                          ?? itemType.GetField("id", BindingFlags.Public | BindingFlags.Instance);
-
-            if (idProp != null && idProp.PropertyType == typeof(int))
-            {
-                CreateIntIndex(itemType, list, o => (int)idProp.GetValue(o));
-            }
-            else if (idField != null && idField.FieldType == typeof(int))
-            {
-                CreateIntIndex(itemType, list, o => (int)idField.GetValue(o));
+    
+                Debug.Log($"[Runtime] Loaded bytes length = {ta.bytes.Length}");
+                try
+                {
+                    using (var ms = new System.IO.MemoryStream(ta.bytes))
+                    {
+                        _gameData = Serializer.Deserialize<GameData>(ms);
+                    }
+    
+                    //Debug.Log(
+                    //    $"[Runtime] Protobuf ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"ConfigManager: Protobuf ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½Ê§ï¿½Ü£ï¿½{e}");
+                    return;
+                }
             }
             else
             {
-                Debug.LogWarning($"ConfigManager: ÀàÐÍ `{itemType.Name}` Ã»ÓÐÕûÐÍ Id ×Ö¶Î»òÊôÐÔ£¬Ìø¹ýË÷Òý");
+                if (ta == null)
+                {
+                    Debug.LogError("ConfigManager: ï¿½Ò²ï¿½ï¿½ï¿½ GameData_Json.json");
+                    return;
+                }
+    
+                Debug.Log($"[Runtime] Loaded JSON length = {ta.text.Length}");
+                try
+                {
+                    _gameData = JsonMapper.ToObject<GameData>(ta.text);
+                    //Debug.Log($"[Runtime] JSON ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"ConfigManager: JSON ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½Ê§ï¿½Ü£ï¿½{e}");
+                    return;
+                }
             }
+    
+            // 2. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            BuildCaches();
         }
-
-        Debug.Log($"ConfigManager: ³õÊ¼»¯Íê³É£¬¹²´¦Àí {tableCount} ÕÅ±í");
-    }
-
-    // ¸¨Öú£º¸ù¾Ý keySelector ¹¹½¨ Dictionary<int,T>
-    private void CreateIntIndex(Type itemType, IList list, Func<object, int> keySelector)
-    {
-        Type dictT = typeof(Dictionary<,>).MakeGenericType(typeof(int), itemType);
-        var dict = Activator.CreateInstance(dictT) as IDictionary;
-
-        int count = 0;
-        foreach (var obj in list)
+    
+        private void BuildCaches()
         {
-            int key = keySelector(obj);
-            if (!dict.Contains(key))
+            _listCache.Clear();
+            _intIdCache.Clear();
+            int tableCount = 0;
+    
+            Type dataType = typeof(GameData);
+    
+            // Ö§ï¿½ï¿½ public ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ public ï¿½Ö¶ï¿½
+            IEnumerable<MemberInfo> members = new List<MemberInfo>()
+                .Concat(dataType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                .Concat(dataType.GetFields(BindingFlags.Public | BindingFlags.Instance));
+    
+            foreach (var m in members)
             {
-                dict.Add(key, obj);
-                count++;
+                Type memberType;
+                object value;
+                if (m is PropertyInfo pi)
+                {
+                    memberType = pi.PropertyType;
+                    value = pi.GetValue(_gameData);
+                }
+                else if (m is FieldInfo fi)
+                {
+                    memberType = fi.FieldType;
+                    value = fi.GetValue(_gameData);
+                }
+                else continue;
+    
+                // Ö»ï¿½ï¿½ï¿½ï¿½ List<>
+                if (!memberType.IsGenericType || memberType.GetGenericTypeDefinition() != typeof(List<>))
+                    continue;
+    
+                var list = value as IList;
+                if (list == null) continue;
+    
+                Type itemType = memberType.GetGenericArguments()[0];
+                _listCache[itemType] = list;
+                tableCount++;
+    
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ public ï¿½ï¿½ï¿½ï¿½ Idï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ public ï¿½Ö¶ï¿½ Id ï¿½ï¿½ï¿½ï¿½ 
+                var idProp = itemType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)
+                             ?? itemType.GetProperty("id", BindingFlags.Public | BindingFlags.Instance);
+                var idField = itemType.GetField("Id", BindingFlags.Public | BindingFlags.Instance)
+                              ?? itemType.GetField("id", BindingFlags.Public | BindingFlags.Instance);
+    
+                if (idProp != null && idProp.PropertyType == typeof(int))
+                {
+                    CreateIntIndex(itemType, list, o => (int)idProp.GetValue(o));
+                }
+                else if (idField != null && idField.FieldType == typeof(int))
+                {
+                    CreateIntIndex(itemType, list, o => (int)idField.GetValue(o));
+                }
+                else
+                {
+                    Debug.LogWarning($"ConfigManager: ï¿½ï¿½ï¿½ï¿½ `{itemType.Name}` Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Id ï¿½Ö¶Î»ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+                }
             }
+    
+            Debug.Log($"ConfigManager: ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ {tableCount} ï¿½Å±ï¿½");
         }
-
-        _intIdCache[itemType] = dict;
-        Debug.Log($"ConfigManager: `{itemType.Name}` Ë÷Òý {count} Ìõ");
-    }
-
-    /// <summary> »ñÈ¡ÕûÕÅ±í </summary>
-    public List<T> GetList<T>()
-    {
-        if (_listCache.TryGetValue(typeof(T), out var list))
-            return (List<T>)list;
-
-        Debug.LogError($"ConfigManager.GetList: Î´ÕÒµ½±í `{typeof(T).Name}`");
-        return null;
-    }
-
-    /// <summary> °´ÕûÐÍ Id ²éÑ¯ </summary>
-    public T GetById<T>(int id)
-    {
-        if (_intIdCache.TryGetValue(typeof(T), out var dictObj)
-            && dictObj is Dictionary<int, T> dict
-            && dict.TryGetValue(id, out var val))
+    
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ keySelector ï¿½ï¿½ï¿½ï¿½ Dictionary<int,T>
+        private void CreateIntIndex(Type itemType, IList list, Func<object, int> keySelector)
         {
-            return val;
+            Type dictT = typeof(Dictionary<,>).MakeGenericType(typeof(int), itemType);
+            var dict = Activator.CreateInstance(dictT) as IDictionary;
+    
+            int count = 0;
+            foreach (var obj in list)
+            {
+                int key = keySelector(obj);
+                if (!dict.Contains(key))
+                {
+                    dict.Add(key, obj);
+                    count++;
+                }
+            }
+    
+            _intIdCache[itemType] = dict;
+            Debug.Log($"ConfigManager: `{itemType.Name}` ï¿½ï¿½ï¿½ï¿½ {count} ï¿½ï¿½");
         }
-
-        return default;
+    
+        /// <summary> ï¿½ï¿½È¡ï¿½ï¿½ï¿½Å±ï¿½ </summary>
+        public List<T> GetList<T>()
+        {
+            if (_listCache.TryGetValue(typeof(T), out var list))
+                return (List<T>)list;
+    
+            Debug.LogError($"ConfigManager.GetList: Î´ï¿½Òµï¿½ï¿½ï¿½ `{typeof(T).Name}`");
+            return null;
+        }
+    
+        /// <summary> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Id ï¿½ï¿½Ñ¯ </summary>
+        public T GetById<T>(int id)
+        {
+            if (_intIdCache.TryGetValue(typeof(T), out var dictObj)
+                && dictObj is Dictionary<int, T> dict
+                && dict.TryGetValue(id, out var val))
+            {
+                return val;
+            }
+    
+            return default;
+        }
     }
 }

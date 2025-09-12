@@ -1,131 +1,134 @@
-using System;
+ï»¿using System;
 using System.IO;
 using UnityEngine;
 
 
-public class LogMessage : SingletonPatternBase<LogMessage>
+namespace FDIM.Framework
 {
-    public bool IsLogMessage;
-    private string _logTxtPath;
-
-    public void Start()
+    public class LogMessage : SingletonPatternBase<LogMessage>
     {
-        InitLogTxt();
-        StartLog();
-        EventCenterManager.Instance.AddListener("EndWork", OnDestroy);
-    }
-
-    void StartLog()
-    {
-        // ×¢²á Unity ÈÕÖ¾»Øµ÷£¬²¶»ñËùÓÐÈÕÖ¾ÐÅÏ¢
-        Application.logMessageReceivedThreaded += ShowMessage;
-    }
-
-    public void OnDestroy()
-    {
-        Debug.Log("EndWork");
-        Application.logMessageReceivedThreaded -= ShowMessage;
-    }
-
-    /// <summary>
-    /// µ÷ÊÔÐÅÏ¢
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="message"></param>
-    /// <param name="type"></param>
-    public void Log<T>(T message, LogType type = LogType.Log)
-    {
-        if (!IsLogMessage) return;
-
-        string msg = message?.ToString() ?? string.Empty;
-        // Êä³öµ½¿ØÖÆÌ¨
-        switch (type)
+        public bool IsLogMessage;
+        private string _logTxtPath;
+    
+        public void Start()
         {
-            case LogType.Warning:
-                Debug.LogWarning(msg);
-                break;
-            case LogType.Error:
-            case LogType.Assert:
-            case LogType.Exception:
-                Debug.LogError(msg);
-                break;
-            default:
-                Debug.Log(msg);
-                break;
+            InitLogTxt();
+            StartLog();
+            EventCenterManager.Instance.AddListener("EndWork", OnDestroy);
         }
-
-        // Ð´ÈëÎÄ¼þ
-        ShowMessage(msg, string.Empty, type);
-    }
-
-
-    /// <summary>
-    /// ÈÕÖ¾»Øµ÷£ºÉú³ÉÈÕÖ¾×Ö·û´®²¢Ð´ÈëÎÄ¼þ
-    /// </summary>
-    /// <param name="condition">ÈÕÖ¾ÄÚÈÝ</param>
-    /// <param name="stackTrace">¶ÑÕ»ÐÅÏ¢</param>
-    /// <param name="type">ÈÕÖ¾ÀàÐÍ</param>
-    private void ShowMessage(string condition, string stackTrace, LogType type)
-    {
-        string logRecord = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n{type}\n{condition}\n{stackTrace}\n";
-        WriteLogTxt(logRecord);
-    }
-
-    /// <summary>
-    /// ³õÊ¼»¯ÈÕÖ¾ÎÄ¼þ£º°´µ±Ç°ÈÕÆÚÉú³ÉÎÄ¼þÃû£¬²¢É¾³ý15ÌìÇ°µÄÈÕÖ¾ÎÄ¼þ
-    /// </summary>
-    private void InitLogTxt()
-    {
-        // Ê¹ÓÃµ±Ç°ÈÕÆÚÉú³ÉÈÕÖ¾ÎÄ¼þÃû£¬ÀýÈç "logTex_20250325.txt"
-        string dateStr = DateTime.Now.ToString("yyyyMMdd");
-        _logTxtPath = Path.Combine(Application.persistentDataPath, $"logTex_{dateStr}.txt");
-
-        // É¨ÃèËùÓÐÈÕÖ¾ÎÄ¼þ£¬É¾³ý15ÌìÇ°µÄÎÄ¼þ
-        string[] logFiles = Directory.GetFiles(Application.persistentDataPath, "logTex_*.txt");
-        foreach (var file in logFiles)
+    
+        void StartLog()
         {
-            string fileName = Path.GetFileNameWithoutExtension(file); // ÀýÈç "logTex_20250310"
-            string datePart = fileName.Replace("logTex_", "");
-            if (DateTime.TryParseExact(datePart, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None,
-                    out DateTime logDate))
+            // ×¢ï¿½ï¿½ Unity ï¿½ï¿½Ö¾ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½Ï¢
+            Application.logMessageReceivedThreaded += ShowMessage;
+        }
+    
+        public void OnDestroy()
+        {
+            Debug.Log("EndWork");
+            Application.logMessageReceivedThreaded -= ShowMessage;
+        }
+    
+        /// <summary>
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="message"></param>
+        /// <param name="type"></param>
+        public void Log<T>(T message, LogType type = LogType.Log)
+        {
+            if (!IsLogMessage) return;
+    
+            string msg = message?.ToString() ?? string.Empty;
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨
+            switch (type)
             {
-                if ((DateTime.Now - logDate).TotalDays > 15)
+                case LogType.Warning:
+                    Debug.LogWarning(msg);
+                    break;
+                case LogType.Error:
+                case LogType.Assert:
+                case LogType.Exception:
+                    Debug.LogError(msg);
+                    break;
+                default:
+                    Debug.Log(msg);
+                    break;
+            }
+    
+            // Ð´ï¿½ï¿½ï¿½Ä¼ï¿½
+            ShowMessage(msg, string.Empty, type);
+        }
+    
+    
+        /// <summary>
+        /// ï¿½ï¿½Ö¾ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½Ä¼ï¿½
+        /// </summary>
+        /// <param name="condition">ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½</param>
+        /// <param name="stackTrace">ï¿½ï¿½Õ»ï¿½ï¿½Ï¢</param>
+        /// <param name="type">ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½</param>
+        private void ShowMessage(string condition, string stackTrace, LogType type)
+        {
+            string logRecord = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n{type}\n{condition}\n{stackTrace}\n";
+            WriteLogTxt(logRecord);
+        }
+    
+        /// <summary>
+        /// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½15ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½
+        /// </summary>
+        private void InitLogTxt()
+        {
+            // Ê¹ï¿½Ãµï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "logTex_20250325.txt"
+            string dateStr = DateTime.Now.ToString("yyyyMMdd");
+            _logTxtPath = Path.Combine(Application.persistentDataPath, $"logTex_{dateStr}.txt");
+    
+            // É¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½ï¿½ï¿½É¾ï¿½ï¿½15ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ä¼ï¿½
+            string[] logFiles = Directory.GetFiles(Application.persistentDataPath, "logTex_*.txt");
+            foreach (var file in logFiles)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(file); // ï¿½ï¿½ï¿½ï¿½ "logTex_20250310"
+                string datePart = fileName.Replace("logTex_", "");
+                if (DateTime.TryParseExact(datePart, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None,
+                        out DateTime logDate))
                 {
-                    try
+                    if ((DateTime.Now - logDate).TotalDays > 15)
                     {
-                        File.Delete(file);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"É¾³ýÈÕÖ¾ÎÄ¼þ {file} Ê§°Ü£º{ex.Message}");
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogError($"É¾ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½ {file} Ê§ï¿½Ü£ï¿½{ex.Message}");
+                        }
                     }
                 }
             }
-        }
-
-        // Èç¹ûµ±Ç°ÈÕÆÚµÄÈÕÖ¾ÎÄ¼þ²»´æÔÚ£¬Ôò´´½¨ÎÄ¼þ
-        if (!File.Exists(_logTxtPath))
-        {
-            File.CreateText(_logTxtPath).Dispose();
-        }
-    }
-
-    /// <summary>
-    /// ÒÔ×·¼Ó·½Ê½Ð´ÈëÈÕÖ¾ÐÅÏ¢µ½ÎÄ¼þ
-    /// </summary>
-    /// <param name="log">ÈÕÖ¾×Ö·û´®</param>
-    private void WriteLogTxt(string log)
-    {
-        try
-        {
-            using (StreamWriter sw = File.AppendText(_logTxtPath))
+    
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ö¾ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ò´´½ï¿½ï¿½Ä¼ï¿½
+            if (!File.Exists(_logTxtPath))
             {
-                sw.WriteLine(log);
+                File.CreateText(_logTxtPath).Dispose();
             }
         }
-        catch (Exception ex)
+    
+        /// <summary>
+        /// ï¿½ï¿½×·ï¿½Ó·ï¿½Ê½Ð´ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Ä¼ï¿½
+        /// </summary>
+        /// <param name="log">ï¿½ï¿½Ö¾ï¿½Ö·ï¿½ï¿½ï¿½</param>
+        private void WriteLogTxt(string log)
         {
-            Debug.LogError($"Ð´ÈëÈÕÖ¾Ê§°Ü£º{ex.Message}");
+            try
+            {
+                using (StreamWriter sw = File.AppendText(_logTxtPath))
+                {
+                    sw.WriteLine(log);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Ð´ï¿½ï¿½ï¿½ï¿½Ö¾Ê§ï¿½Ü£ï¿½{ex.Message}");
+            }
         }
     }
 }

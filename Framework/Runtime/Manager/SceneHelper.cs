@@ -1,54 +1,57 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 
-/// <summary>
-/// À©Õ¹º¯Êý
-/// </summary>
-public static class SceneHelper
+namespace FDIM.Framework
 {
-    public static int IntAddOne(this int number)
-    {
-        return number + 1;
-    }
-
-
-    public static void FindAllChildrenRecursive(this Transform parent)
-    {
-        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
-        {
-            if (child != parent) // ÅÅ³ý×ÔÉí
-            {
-                Debug.Log("×ÓÎïÌå: " + child.name);
-            }
-        }
-    }
-
-
     /// <summary>
-    /// ±éÀútransformÎïÌåÏÂµÄchildNameµÄÎïÌå
+    /// ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½
     /// </summary>
-    /// <param name="transform"></param>
-    /// <param name="childName"></param>
-    /// <returns></returns>
-    public static Transform FindDeepChild(this Transform transform, string childName)
+    public static class SceneHelper
     {
-        // ±éÀúËùÓÐÖ±½Ó×ÓÎïÌå
-        foreach (Transform child in transform)
+        public static int IntAddOne(this int number)
         {
-            // Èç¹ûÕÒµ½Ä¿±êÎïÌå£¬·µ»ØÆä Transform
-            if (child.name == childName)
+            return number + 1;
+        }
+    
+    
+        public static void FindAllChildrenRecursive(this Transform parent)
+        {
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
             {
-                return child;
-            }
-
-            // µÝ¹é¼ì²é×ÓÎïÌå
-            Transform foundChild = FindDeepChild(child, childName);
-            if (foundChild != null)
-            {
-                return foundChild;
+                if (child != parent) // ï¿½Å³ï¿½ï¿½ï¿½ï¿½ï¿½
+                {
+                    Debug.Log("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: " + child.name);
+                }
             }
         }
-
-        return null; // Èç¹ûÃ»ÓÐÕÒµ½£¬·µ»Ø null
+    
+    
+        /// <summary>
+        /// ï¿½ï¿½ï¿½ï¿½transformï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½childNameï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="childName"></param>
+        /// <returns></returns>
+        public static Transform FindDeepChild(this Transform transform, string childName)
+        {
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            foreach (Transform child in transform)
+            {
+                // ï¿½ï¿½ï¿½ï¿½Òµï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½å£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Transform
+                if (child.name == childName)
+                {
+                    return child;
+                }
+    
+                // ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                Transform foundChild = FindDeepChild(child, childName);
+                if (foundChild != null)
+                {
+                    return foundChild;
+                }
+            }
+    
+            return null; // ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ null
+        }
     }
 }
