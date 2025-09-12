@@ -1,3 +1,4 @@
+using FDIM.Framework;
 using XH;
 
 //╫с©з©ию╘ЁД
