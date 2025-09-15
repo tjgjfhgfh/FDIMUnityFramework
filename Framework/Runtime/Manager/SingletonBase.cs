@@ -40,6 +40,7 @@ namespace FDIM.Framework
                     if (instance == null)
                     {
                         GameObject singletonObject = new GameObject(typeof(T).Name);
+                        Debug.Log(singletonObject.name);
                         instance = singletonObject.AddComponent<T>();
                     }
                 }
@@ -50,21 +51,17 @@ namespace FDIM.Framework
 
         public bool destoryOnLoadScene;
 
+
         protected virtual void Awake()
         {
-            // 如果该对象不是单例对象，则销毁它
             if (instance != null && instance != this)
             {
-                Destroy(gameObject);
+                DestroyImmediate(gameObject);          // ← 立刻销毁
+                return;                                // ← 关键！别再往下走
             }
-            else
-            {
-                // 将当前对象赋值给单例对象
-                instance = this as T;
-                if (!destoryOnLoadScene)
-                    // 确保该对象在场景切换时不被销毁
-                    DontDestroyOnLoad(gameObject);
-            }
+            instance = this as T;
+            if (!destoryOnLoadScene)
+                DontDestroyOnLoad(gameObject);
         }
     }
 }

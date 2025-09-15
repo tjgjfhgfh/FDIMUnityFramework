@@ -31,7 +31,7 @@ namespace FDIM.Framework
         /// <summary> Mono管理 </summary>
         public static MonoManager MonoManager => MonoManager.Instance;
     
-        /// <summary> 对象此管理 </summary>
+        /// <summary> 对象池管理 </summary>
         public static ObjectPoolsManager ObjectPoolsManagerPools => ObjectPoolsManager.Instance;
 
         /// <summary> Resources加载管理</summary>
