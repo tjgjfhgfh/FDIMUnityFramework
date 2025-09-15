@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// </summary>
 namespace FDIM.Framework
 {
-    public class UIManager : SingletonPatternMonoAutoBase_DontDestroyOnLoad<UIManager>
+    public class UIManager : SingletonMonoBase<UIManager>
     {
         //最后方的层的Transform
         private Transform rearmost;
@@ -216,43 +216,49 @@ namespace FDIM.Framework
 
         void CreateOverlayCanvas()
         {
-            //改Layer
-            gameObject.layer = LayerMask.NameToLayer("UI");
+            var canvsGameobject = FindObjectOfType<Canvas>() == null ? gameObject : FindObjectOfType<Canvas>().gameObject;
+            if (!FindObjectOfType<Canvas>())
+            {
+                //改Layer
+                gameObject.layer = LayerMask.NameToLayer("UI");
 
-            //添加并设置Canvas组件
-            Canvas canvas = gameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 30000;
+                //添加并设置Canvas组件
+                Canvas canvas = gameObject.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 30000;
+                //添加并设置CanvasScaler组件
+                CanvasScaler canvasScaler = canvsGameobject.AddComponent<CanvasScaler>();
+                canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
+                canvasScaler.matchWidthOrHeight = Screen.width > Screen.height ? 1 : 0;
 
-            //添加并设置CanvasScaler组件
-            CanvasScaler canvasScaler = gameObject.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-            canvasScaler.matchWidthOrHeight = Screen.width > Screen.height ? 1 : 0;
+                //添加并设置Graphic Raycaster组件
+                GraphicRaycaster graphicRaycaster = canvsGameobject.AddComponent<GraphicRaycaster>();
+            }
+          
 
-            //添加并设置Graphic Raycaster组件
-            GraphicRaycaster graphicRaycaster = gameObject.AddComponent<GraphicRaycaster>();
+      
 
             //添加子物体，作为显示的层的父物体
             //Rearmost层的父物体
             GameObject rearmost = new GameObject("Rearmost");
-            rearmost.transform.SetParent(transform, false);
+            rearmost.transform.SetParent(canvsGameobject.transform, false);
 
             //Rear层的父物体
             GameObject rear = new GameObject("Rear");
-            rear.transform.SetParent(transform, false);
+            rear.transform.SetParent(canvsGameobject.transform, false);
 
             //Middle层的父物体
             GameObject middle = new GameObject("Middle");
-            middle.transform.SetParent(transform, false);
+            middle.transform.SetParent(canvsGameobject.transform, false);
 
             //Fornt层的父物体
             GameObject front = new GameObject("Front");
-            front.transform.SetParent(transform, false);
+            front.transform.SetParent(canvsGameobject.transform, false);
 
             //Frontmost层的父物体
             GameObject foreFront = new GameObject("Forefront");
-            foreFront.transform.SetParent(transform, false);
+            foreFront.transform.SetParent(canvsGameobject.transform, false);
         }
 
         void CreateEventSystem()
