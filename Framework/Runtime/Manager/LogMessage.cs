@@ -2,45 +2,45 @@
 using System.IO;
 using UnityEngine;
 
-
 namespace FDIM.Framework
 {
     public class LogMessage : SingletonPatternBase<LogMessage>
     {
         public bool IsLogMessage;
         private string _logTxtPath;
-    
+
         public void Start()
         {
             InitLogTxt();
             StartLog();
             EventCenterManager.Instance.AddListener("EndWork", OnDestroy);
         }
-    
+
         void StartLog()
         {
-            // ע�� Unity ��־�ص�������������־��Ϣ
+            // 注册 Unity 日志回调，捕获所有日志信息（含多线程回调）
             Application.logMessageReceivedThreaded += ShowMessage;
         }
-    
+
         public void OnDestroy()
         {
             Debug.Log("EndWork");
             Application.logMessageReceivedThreaded -= ShowMessage;
         }
-    
+
         /// <summary>
-        /// ������Ϣ
+        /// 打印日志（统一入口）
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message"></param>
-        /// <param name="type"></param>
+        /// <typeparam name="T">要记录的消息类型</typeparam>
+        /// <param name="message">消息内容</param>
+        /// <param name="type">日志类型</param>
         public void Log<T>(T message, LogType type = LogType.Log)
         {
             if (!IsLogMessage) return;
-    
+
             string msg = message?.ToString() ?? string.Empty;
-            // ���������̨
+
+            // 打印到控制台
             switch (type)
             {
                 case LogType.Warning:
@@ -55,38 +55,37 @@ namespace FDIM.Framework
                     Debug.Log(msg);
                     break;
             }
-    
-            // д���ļ�
+
+            // 写入到文件
             ShowMessage(msg, string.Empty, type);
         }
-    
-    
+
         /// <summary>
-        /// ��־�ص���������־�ַ�����д���ļ�
+        /// 日志回调：把日志字符串写入文件
         /// </summary>
-        /// <param name="condition">��־����</param>
-        /// <param name="stackTrace">��ջ��Ϣ</param>
-        /// <param name="type">��־����</param>
+        /// <param name="condition">日志内容</param>
+        /// <param name="stackTrace">堆栈信息</param>
+        /// <param name="type">日志类型</param>
         private void ShowMessage(string condition, string stackTrace, LogType type)
         {
             string logRecord = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n{type}\n{condition}\n{stackTrace}\n";
             WriteLogTxt(logRecord);
         }
-    
+
         /// <summary>
-        /// ��ʼ����־�ļ�������ǰ���������ļ�������ɾ��15��ǰ����־�ļ�
+        /// 初始化日志文件：创建今日文件，并清理 15 天前的旧日志
         /// </summary>
         private void InitLogTxt()
         {
-            // ʹ�õ�ǰ����������־�ļ��������� "logTex_20250325.txt"
+            // 使用当天日期作为日志文件名，例如 "logTex_20250325.txt"
             string dateStr = DateTime.Now.ToString("yyyyMMdd");
             _logTxtPath = Path.Combine(Application.persistentDataPath, $"logTex_{dateStr}.txt");
-    
-            // ɨ��������־�ļ���ɾ��15��ǰ���ļ�
+
+            // 扫描所有日志文件，删除 15 天前的文件
             string[] logFiles = Directory.GetFiles(Application.persistentDataPath, "logTex_*.txt");
             foreach (var file in logFiles)
             {
-                string fileName = Path.GetFileNameWithoutExtension(file); // ���� "logTex_20250310"
+                string fileName = Path.GetFileNameWithoutExtension(file); // 例如 "logTex_20250310"
                 string datePart = fileName.Replace("logTex_", "");
                 if (DateTime.TryParseExact(datePart, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None,
                         out DateTime logDate))
@@ -99,23 +98,23 @@ namespace FDIM.Framework
                         }
                         catch (Exception ex)
                         {
-                            Debug.LogError($"ɾ����־�ļ� {file} ʧ�ܣ�{ex.Message}");
+                            Debug.LogError($"删除日志文件 {file} 失败：{ex.Message}");
                         }
                     }
                 }
             }
-    
-            // �����ǰ���ڵ���־�ļ������ڣ��򴴽��ļ�
+
+            // 如果当日的日志文件不存在，则创建文件
             if (!File.Exists(_logTxtPath))
             {
                 File.CreateText(_logTxtPath).Dispose();
             }
         }
-    
+
         /// <summary>
-        /// ��׷�ӷ�ʽд����־��Ϣ���ļ�
+        /// 以追加方式写入日志信息到文件
         /// </summary>
-        /// <param name="log">��־�ַ���</param>
+        /// <param name="log">日志内容</param>
         private void WriteLogTxt(string log)
         {
             try
@@ -127,7 +126,7 @@ namespace FDIM.Framework
             }
             catch (Exception ex)
             {
-                Debug.LogError($"д����־ʧ�ܣ�{ex.Message}");
+                Debug.LogError($"写入日志失败：{ex.Message}");
             }
         }
     }
