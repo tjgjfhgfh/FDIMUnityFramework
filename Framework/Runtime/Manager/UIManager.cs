@@ -114,16 +114,16 @@ namespace FDIM.Framework
         }
 
         // —— 业务 API —— 
-        public void ShowPanel(GameObject panelPrefab, E_PanelDisplayedLayer layer = E_PanelDisplayedLayer.Middle)
+        public GameObject ShowPanel(GameObject panelPrefab, E_PanelDisplayedLayer layer = E_PanelDisplayedLayer.Middle)
         {
             if (!panelPrefab)
             {
                 Debug.LogWarning("显示面板失败：panelPrefab 为 null");
-                return;
+                return null;
             }
 
             PruneDeadPanels();
-            if (panelDictionary.ContainsKey(panelPrefab)) return;
+            if (panelDictionary.ContainsKey(panelPrefab)) return panelDictionary[panelPrefab];
 
             var panel = Instantiate(panelPrefab);
             panel.name = panelPrefab.name;
@@ -131,6 +131,8 @@ namespace FDIM.Framework
 
             var parent = GetLayer(layer) ?? GetLayer(E_PanelDisplayedLayer.Middle);
             panel.transform.SetParent(parent, false);     // 只设置一次父节点，避免中途访问到无效 Transform
+
+            return panel;
         }
 
         public void HidePanel(GameObject panelPrefab)
