@@ -11,81 +11,75 @@ namespace FDIM.Framework
 {
     public class ConfigManager : SingletonPatternBase<ConfigManager>
     {
-        [Header("���ݸ�ʽ�л�")] [Tooltip("��ѡ�����ȴ� .bytes (Protobuf) ������������ JSON ����")]
-        public bool UseBinary = true;
-    
-        private GameData _gameData;
         private readonly Dictionary<Type, IList> _listCache = new();
         private readonly Dictionary<Type, object> _intIdCache = new();
-    
-        public void Init(TextAsset  asset)
+
+        /// <summary>
+        /// UseBinary代表二进制orJson
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="asset"></param>
+        /// <param name="UseBinary"></param>
+        public void Init<T>(TextAsset asset, bool UseBinary ) where T : class
         {
-            Debug.Log($"ConfigManager: ��ʼ��ʼ�� (UseBinary={UseBinary})");
-            var  ta=asset;
-            // 1. �����л� JSON �� Protobuf
+            Debug.Log($"ConfigManager: 初始化中 (UseBinary={UseBinary})");
+
+            if (asset == null)
+            {
+                Debug.LogError("ConfigManager: 资产文件为空！");
+                return;
+            }
+
+            // 1. 选择解析 JSON 或 Protobuf
             if (UseBinary)
             {
-                if (ta == null)
-                {
-                    Debug.LogError("ConfigManager: �Ҳ��� GameData.bytes");
-                    return;
-                }
-    
-                Debug.Log($"[Runtime] Loaded bytes length = {ta.bytes.Length}");
+                Debug.Log($"[Runtime] Loaded bytes length = {asset.bytes.Length}");
                 try
                 {
-                    using (var ms = new System.IO.MemoryStream(ta.bytes))
+                    using (var ms = new System.IO.MemoryStream(asset.bytes))
                     {
-                        _gameData = Serializer.Deserialize<GameData>(ms);
+                        // 使用泛型 T 来反序列化数据
+                        var data = Serializer.Deserialize<T>(ms);
+                        BuildCaches(data);
                     }
-    
-                    //Debug.Log(
-                    //    $"[Runtime] Protobuf �����л��� SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"ConfigManager: Protobuf �����л�ʧ�ܣ�{e}");
+                    Debug.LogError($"ConfigManager: Protobuf 反序列化失败：{e}");
                     return;
                 }
             }
             else
             {
-                if (ta == null)
-                {
-                    Debug.LogError("ConfigManager: �Ҳ��� GameData_Json.json");
-                    return;
-                }
-    
-                Debug.Log($"[Runtime] Loaded JSON length = {ta.text.Length}");
+                Debug.Log($"[Runtime] Loaded JSON length = {asset.text.Length}");
                 try
                 {
-                    _gameData = JsonMapper.ToObject<GameData>(ta.text);
-                    //Debug.Log($"[Runtime] JSON �����л��� SceneIn = {_gameData.SceneIn.Count}, Keys = {_gameData.Keys.Count}");
+                    // 使用泛型 T 来反序列化数据
+                    var data = JsonMapper.ToObject<T>(asset.text);
+                    BuildCaches(data);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"ConfigManager: JSON �����л�ʧ�ܣ�{e}");
+                    Debug.LogError($"ConfigManager: JSON 反序列化失败：{e}");
                     return;
                 }
             }
-    
-            // 2. ��������������
-            BuildCaches();
         }
-    
-        private void BuildCaches()
+
+        // 修改 BuildCaches 方法，接收泛型数据并根据类型构建缓存
+        private void BuildCaches<T>(T gameData) where T : class
         {
             _listCache.Clear();
             _intIdCache.Clear();
             int tableCount = 0;
-    
-            Type dataType = typeof(GameData);
-    
-            // ֧�� public ���� �� public �ֶ�
+
+            Type dataType = typeof(T);
+
+            // 支持 public 属性 和 public 字段
             IEnumerable<MemberInfo> members = new List<MemberInfo>()
                 .Concat(dataType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 .Concat(dataType.GetFields(BindingFlags.Public | BindingFlags.Instance));
-    
+
             foreach (var m in members)
             {
                 Type memberType;
@@ -93,32 +87,32 @@ namespace FDIM.Framework
                 if (m is PropertyInfo pi)
                 {
                     memberType = pi.PropertyType;
-                    value = pi.GetValue(_gameData);
+                    value = pi.GetValue(gameData);
                 }
                 else if (m is FieldInfo fi)
                 {
                     memberType = fi.FieldType;
-                    value = fi.GetValue(_gameData);
+                    value = fi.GetValue(gameData);
                 }
                 else continue;
-    
-                // ֻ���� List<>
+
+                // 仅处理 List<>
                 if (!memberType.IsGenericType || memberType.GetGenericTypeDefinition() != typeof(List<>))
                     continue;
-    
+
                 var list = value as IList;
                 if (list == null) continue;
-    
+
                 Type itemType = memberType.GetGenericArguments()[0];
                 _listCache[itemType] = list;
                 tableCount++;
-    
-                // ���� ���� public ���� Id������ public �ֶ� Id ���� 
+
+                // 尝试通过 public 属性 Id 或者 public 字段 Id 创建索引
                 var idProp = itemType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)
                              ?? itemType.GetProperty("id", BindingFlags.Public | BindingFlags.Instance);
                 var idField = itemType.GetField("Id", BindingFlags.Public | BindingFlags.Instance)
                               ?? itemType.GetField("id", BindingFlags.Public | BindingFlags.Instance);
-    
+
                 if (idProp != null && idProp.PropertyType == typeof(int))
                 {
                     CreateIntIndex(itemType, list, o => (int)idProp.GetValue(o));
@@ -129,19 +123,19 @@ namespace FDIM.Framework
                 }
                 else
                 {
-                    Debug.LogWarning($"ConfigManager: ���� `{itemType.Name}` û������ Id �ֶλ����ԣ���������");
+                    Debug.LogWarning($"ConfigManager: `{itemType.Name}` 没有找到 Id 属性或字段，无法创建索引");
                 }
             }
-    
-            Debug.Log($"ConfigManager: ��ʼ����ɣ������� {tableCount} �ű�");
+
+            Debug.Log($"ConfigManager: 初始化完成，共解析了 {tableCount} 个表");
         }
-    
-        // ���������� keySelector ���� Dictionary<int,T>
+
+        // 创建字典索引
         private void CreateIntIndex(Type itemType, IList list, Func<object, int> keySelector)
         {
             Type dictT = typeof(Dictionary<,>).MakeGenericType(typeof(int), itemType);
             var dict = Activator.CreateInstance(dictT) as IDictionary;
-    
+
             int count = 0;
             foreach (var obj in list)
             {
@@ -152,22 +146,22 @@ namespace FDIM.Framework
                     count++;
                 }
             }
-    
+
             _intIdCache[itemType] = dict;
-            Debug.Log($"ConfigManager: `{itemType.Name}` ���� {count} ��");
+            Debug.Log($"ConfigManager: `{itemType.Name}` 索引创建了 {count} 项");
         }
-    
-        /// <summary> ��ȡ���ű� </summary>
+
+        /// <summary> 获取指定类型的列表 </summary>
         public List<T> GetList<T>()
         {
             if (_listCache.TryGetValue(typeof(T), out var list))
                 return (List<T>)list;
-    
-            Debug.LogError($"ConfigManager.GetList: δ�ҵ��� `{typeof(T).Name}`");
+
+            Debug.LogError($"ConfigManager.GetList: 未找到 `{typeof(T).Name}` 的列表");
             return null;
         }
-    
-        /// <summary> ������ Id ��ѯ </summary>
+
+        /// <summary> 根据 Id 查询对象 </summary>
         public T GetById<T>(int id)
         {
             if (_intIdCache.TryGetValue(typeof(T), out var dictObj)
@@ -176,7 +170,7 @@ namespace FDIM.Framework
             {
                 return val;
             }
-    
+
             return default;
         }
     }
