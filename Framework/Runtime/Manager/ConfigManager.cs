@@ -128,6 +128,7 @@ namespace FDIM.Framework
             }
 
             Debug.Log($"ConfigManager: 初始化完成，共解析了 {tableCount} 个表");
+            Managers.EventCenterManager.Dispatch("ConfigManagerInitCompleted");
         }
 
         // 创建字典索引
