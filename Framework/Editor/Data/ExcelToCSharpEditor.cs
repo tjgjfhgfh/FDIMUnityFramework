@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -13,11 +14,7 @@ using UnityEngine;
 
 namespace FDIM.Framework
 {
-    public class GameData
-    {
-
-    }
-
+   
     public class ExcelToCSharpEditor : EditorWindow
     {
 
@@ -252,13 +249,40 @@ namespace FDIM.Framework
 
         private void SaveToBinary(string excelPath, string outDir)
         {
+            // 生成 GameData 类并保存为 C# 脚本文件
+            //GenerateClassesFromExcel(excelPath, outDir); // 生成 C# 文件
+
+            // 获取生成的 C# 文件路径，Unity 会自动编译它
+            string assemblyPath = Path.Combine("Assets/Scripts/Generated", "GameDataTable.cs");
+
+            if (!File.Exists(assemblyPath))
+            {
+                Debug.LogError($"生成的 C# 文件未找到: {assemblyPath}");
+                return;
+            }
+
+            // 获取 Unity 自动编译的程序集
+            var assembly = Assembly.Load("Assembly-CSharp"); // Unity 会将编译后的脚本放在 Assembly-CSharp.dll 中
+
+            // 使用正确的命名空间和类名来获取生成的类
+            Type gameDataType = assembly.GetType("FDIM.Framework.GameData");
+
+            if (gameDataType == null)
+            {
+                Debug.LogError("GameData 类型未找到");
+                return;
+            }
+
+            // 创建 GameData 实例
+            var gd = Activator.CreateInstance(gameDataType);
+
+            // 继续执行 SaveToBinary 的逻辑
             var raw = ReadExcelData(excelPath);
-            var gd = new GameData();
             foreach (var sheetName in raw.Keys)
             {
                 var listDict = raw[sheetName];
-                var prop = typeof(GameData).GetProperty(sheetName);
-                var field = typeof(GameData).GetField(sheetName);
+                var prop = gameDataType.GetProperty(sheetName);
+                var field = gameDataType.GetField(sheetName);
                 if (prop == null && field == null)
                 {
                     Debug.LogWarning($"未在 GameData 中找到 {sheetName} 对应的成员，已跳过");
@@ -292,6 +316,9 @@ namespace FDIM.Framework
             Debug.Log($"[Exporter] Protobuf 二进制文件写入成功，文件大小 = {size} 字节 ({bytesPath})");
         }
 
+
+
+
         #endregion
 
         #region C# 类 生成 (含 Protobuf 注解 和 namespace)
@@ -306,6 +333,10 @@ namespace FDIM.Framework
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine("using ProtoBuf;");
             sb.AppendLine();
+
+            // 为生成的类指定命名空间
+            sb.AppendLine("namespace FDIM.Framework");
+            sb.AppendLine("{");
 
             var classNames = new List<string>();
 
@@ -357,11 +388,19 @@ namespace FDIM.Framework
 
             sb.AppendLine("}");
 
-            string outFile = Path.Combine(outDir, "GameDataTable.cs");
+            sb.AppendLine("}");  // 结束命名空间
+
+            // 将生成的 C# 类保存为文件
+            //string outFile = Path.Combine(outDir, "GameDataTable.cs");
+            string outFile = Path.Combine("Assets/Scripts/Generated", "GameDataTable.cs");
+
             Directory.CreateDirectory(Path.GetDirectoryName(outFile));
             File.WriteAllText(outFile, sb.ToString(), Encoding.UTF8);
-            Debug.Log($"[Exporter] C# + Protobuf 文件写入: {outFile}");
+            // 刷新 AssetDatabase 使 Unity 能识别新的文件
+            AssetDatabase.Refresh();
+            Debug.Log($"[Exporter] C# 类文件已写入: {outFile}");
         }
+
 
         #endregion
 
