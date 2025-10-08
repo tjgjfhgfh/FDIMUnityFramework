@@ -22,6 +22,8 @@ namespace FDIM.Framework
             if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
             {
                 onComplete?.Invoke(cached.Result as T);
+
+                Managers.LogMessage.Log("从字典读取");
                 return;
             }
     
@@ -34,8 +36,10 @@ namespace FDIM.Framework
                 else
                     Debug.LogError($"[Addressables] 加载失败: {key}");
             };
+            Managers.LogMessage.Log("从Addressables加载");
+
         }
-    
+
         /// 批量加载资源
         public void LoadAssets<T>(IEnumerable<string> keys, Action<IList<T>> onComplete) where T : UnityEngine.Object
         {
