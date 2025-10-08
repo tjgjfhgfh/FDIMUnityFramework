@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.U2D;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.U2D;
 
 
 namespace FDIM.Framework
@@ -15,7 +15,7 @@ namespace FDIM.Framework
     {
         private Dictionary<string, AsyncOperationHandle> _loadedAssets = new();
         private List<AsyncOperationHandle<GameObject>> _instantiatedObjects = new();
-    
+
         /// 加载单个资源（泛型）
         public void LoadAsset<T>(string key, Action<T> onComplete) where T : UnityEngine.Object
         {
@@ -26,7 +26,7 @@ namespace FDIM.Framework
                 Managers.LogMessage.Log("从字典读取");
                 return;
             }
-    
+
             var handle = Addressables.LoadAssetAsync<T>(key);
             _loadedAssets[key] = handle;
             handle.Completed += op =>
@@ -52,10 +52,9 @@ namespace FDIM.Framework
                     Debug.LogError("[Addressables] 批量加载失败");
             };
         }
-    
+
         /// 实例化 GameObject（会记录以便销毁）
-        public void Instantiate(string key, Vector3 pos, Quaternion rot, Transform parent = null,
-            Action<GameObject> onComplete = null)
+        public void Instantiate(string key, Vector3 pos, Quaternion rot, Transform parent = null, Action<GameObject> onComplete = null)
         {
             var handle = Addressables.InstantiateAsync(key, pos, rot, parent);
             handle.Completed += op =>
@@ -71,13 +70,13 @@ namespace FDIM.Framework
                 }
             };
         }
-    
+
         /// 释放实例化对象
         public void ReleaseInstance(GameObject go)
         {
             Addressables.ReleaseInstance(go);
         }
-    
+
         /// 加载 JSON 文本并解析为对象
         public void LoadJson<T>(string key, Action<T> onComplete)
         {
@@ -94,7 +93,7 @@ namespace FDIM.Framework
                 }
             });
         }
-    
+
         /// 从图集中加载 Sprite
         public void LoadSpriteFromAtlas(string atlasKey, string spriteName, Action<Sprite> onComplete)
         {
@@ -107,7 +106,7 @@ namespace FDIM.Framework
                     Debug.LogError($"[Addressables] 图集中找不到 Sprite: {spriteName}");
             });
         }
-    
+
         /// 卸载某个资源
         public void Unload(string key)
         {
@@ -117,7 +116,7 @@ namespace FDIM.Framework
                 _loadedAssets.Remove(key);
             }
         }
-    
+
         /// 卸载全部资源
         public void UnloadAll()
         {
