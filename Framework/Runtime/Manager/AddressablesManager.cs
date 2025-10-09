@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.U2D;
 
 
 namespace FDIM.Framework
@@ -14,9 +14,15 @@ namespace FDIM.Framework
     public class AddressablesManager : SingletonPatternBase<AddressablesManager>
     {
         private Dictionary<string, AsyncOperationHandle> _loadedAssets = new();
-        private List<AsyncOperationHandle<GameObject>> _instantiatedObjects = new();
 
+        #region  lambda表达式 版本
+
+        /// <summary>
         /// 加载单个资源（泛型）
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="onComplete"></param>
         public void LoadAsset<T>(string key, Action<T> onComplete) where T : UnityEngine.Object
         {
             if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
@@ -26,13 +32,14 @@ namespace FDIM.Framework
                 Managers.LogMessage.Log("从字典读取");
                 return;
             }
-
             var handle = Addressables.LoadAssetAsync<T>(key);
-            _loadedAssets[key] = handle;
             handle.Completed += op =>
             {
                 if (op.Status == AsyncOperationStatus.Succeeded)
+                {
                     onComplete?.Invoke(op.Result as T);
+                    _loadedAssets[key] = handle;
+                }
                 else
                     Debug.LogError($"[Addressables] 加载失败: {key}");
             };
@@ -40,72 +47,116 @@ namespace FDIM.Framework
 
         }
 
-        /// 批量加载资源
+        /// <summary>
+        /// 批量加载多个资源，并在全部完成后回调
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="keys"></param>
+        /// <param name="onComplete"></param>
         public void LoadAssets<T>(IEnumerable<string> keys, Action<IList<T>> onComplete) where T : UnityEngine.Object
         {
-            var handle = Addressables.LoadAssetsAsync<T>(keys, null);
-            handle.Completed += op =>
+            List<T> loadedList = new();
+            List<AsyncOperationHandle<T>> handles = new();
+
+            int totalCount = 0;
+            int completedCount = 0;
+
+            foreach (var key in keys)
             {
-                if (op.Status == AsyncOperationStatus.Succeeded)
-                    onComplete?.Invoke(op.Result);
-                else
-                    Debug.LogError("[Addressables] 批量加载失败");
-            };
+                totalCount++;
+                var handle = Addressables.LoadAssetAsync<T>(key);
+                handles.Add(handle);
+                handle.Completed += op =>
+                {
+                    completedCount++;
+
+                    if (op.Status == AsyncOperationStatus.Succeeded)
+                    {
+                        loadedList.Add(op.Result);
+                        _loadedAssets[key] = handle;
+                    }
+                    else
+                        Debug.LogError($"[Addressables] 资源加载失败: {key}");
+
+                    // 当全部加载完成时触发回调
+                    if (completedCount == totalCount)
+                        onComplete?.Invoke(loadedList);
+                };
+            }
+        }
+        #endregion
+
+        #region Async/Await 版本
+        /// <summary>
+        /// 异步加载单个资源
+        /// </summary>
+        public async Task<T> LoadAssetAsync<T>(string key) where T : UnityEngine.Object
+        {
+            if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
+            {
+                Managers.LogMessage.Log($"[AddressablesAsync] 从字典读取: {key}");
+                return cached.Result as T;
+            }
+
+            var handle = Addressables.LoadAssetAsync<T>(key);
+            Managers.LogMessage.Log($"[AddressablesAsync] 从Addressables加载: {key}");
+
+            try
+            {
+                var result = await handle.Task;
+                _loadedAssets[key] = handle;
+                return result;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[AddressablesAsync] 加载失败: {key}\n{e}");
+                return null;
+            }
         }
 
-        /// 实例化 GameObject（会记录以便销毁）
-        public void Instantiate(string key, Vector3 pos, Quaternion rot, Transform parent = null, Action<GameObject> onComplete = null)
+        /// <summary>
+        /// 批量异步加载多个资源，并返回列表
+        /// </summary>
+        public async Task<IList<T>> LoadAssetsAsync<T>(IEnumerable<string> keys) where T : UnityEngine.Object
         {
-            var handle = Addressables.InstantiateAsync(key, pos, rot, parent);
-            handle.Completed += op =>
-            {
-                if (op.Status == AsyncOperationStatus.Succeeded)
-                {
-                    _instantiatedObjects.Add(op);
-                    onComplete?.Invoke(op.Result);
-                }
-                else
-                {
-                    Debug.LogError($"[Addressables] 实例化失败: {key}");
-                }
-            };
+            var results = new List<T>();
+            var tasks = new List<Task<T>>();
+
+            foreach (var key in keys)
+                tasks.Add(LoadAssetAsync<T>(key));
+
+            var loaded = await Task.WhenAll(tasks);
+
+            foreach (var item in loaded)
+                if (item != null)
+                    results.Add(item);
+
+            return results;
         }
 
-        /// 释放实例化对象
-        public void ReleaseInstance(GameObject go)
+        /// <summary>
+        /// 异步加载 JSON 文件并解析为对象
+        /// </summary>
+        public async Task<T> LoadJsonAsync<T>(string key)
         {
-            Addressables.ReleaseInstance(go);
-        }
-
-        /// 加载 JSON 文本并解析为对象
-        public void LoadJson<T>(string key, Action<T> onComplete)
-        {
-            LoadAsset<TextAsset>(key, json =>
+            var jsonAsset = await LoadAssetAsync<TextAsset>(key);
+            if (jsonAsset == null)
             {
-                try
-                {
-                    var obj = JsonUtility.FromJson<T>(json.text);
-                    onComplete?.Invoke(obj);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[Addressables] JSON 解析失败: {e.Message}");
-                }
-            });
-        }
+                Debug.LogError($"[AddressablesAsync] JSON 加载失败: {key}");
+                return default;
+            }
 
-        /// 从图集中加载 Sprite
-        public void LoadSpriteFromAtlas(string atlasKey, string spriteName, Action<Sprite> onComplete)
-        {
-            LoadAsset<SpriteAtlas>(atlasKey, atlas =>
+            try
             {
-                var sprite = atlas.GetSprite(spriteName);
-                if (sprite != null)
-                    onComplete?.Invoke(sprite);
-                else
-                    Debug.LogError($"[Addressables] 图集中找不到 Sprite: {spriteName}");
-            });
+                return JsonUtility.FromJson<T>(jsonAsset.text);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[AddressablesAsync] JSON 解析失败: {e.Message}");
+                return default;
+            }
         }
+        #endregion
 
         /// 卸载某个资源
         public void Unload(string key)
