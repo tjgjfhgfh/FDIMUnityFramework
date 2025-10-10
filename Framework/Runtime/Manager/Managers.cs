@@ -2,7 +2,7 @@
 
 namespace FDIM.Framework
 {
-    //�ӿڿ�����
+  
     public interface IManager
     {
         public void Init();
@@ -51,5 +51,11 @@ namespace FDIM.Framework
     
         /// <summary> Addressables加载管理 </summary>
         public static AddressablesManager AddressablesManager => AddressablesManager.Instance;
+
+        /// <summary> Addressables远端下载资源管理 </summary>
+
+        public static AddressablesDownloaderRemoteCatalog AddressablesDownloaderRemoteCatalog => AddressablesDownloaderRemoteCatalog.Instance;
+
+        
     }
 }

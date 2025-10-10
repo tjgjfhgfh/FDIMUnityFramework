@@ -40,10 +40,10 @@ namespace FDIM.Framework
         private const string PrefsExcelPathKey = "ExcelToCSharpEditor_LastExcelPath";
         private const string PrefsOutputDirKey = "ExcelToCSharpEditor_LastOutputDir";
 
-        [MenuItem("Tools/Data/Excel To C# Classes")]
+        [MenuItem("FDIM/Data/Excel To C# Classes")]
         public static void ShowWindowForClasses() => ShowWindow(Mode.Classes);
 
-        [MenuItem("Tools/Data/Excel To JSON OR BIN")]
+        [MenuItem("FDIM/Data/Excel To JSON OR BIN")]
         public static void ShowWindowForData() => ShowWindow(Mode.Data);
 
         private static void ShowWindow(Mode mode)
