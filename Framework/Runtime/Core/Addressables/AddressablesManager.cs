@@ -85,7 +85,7 @@ namespace FDIM.Framework
             }
         }
         #endregion
-           
+
         #region Async/Await 版本
         /// <summary>
         /// 异步加载单个资源
@@ -113,6 +113,107 @@ namespace FDIM.Framework
                 return null;
             }
         }
+
+
+        /// <summary>
+        /// 加载BG音频专用
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public async Task<AudioClip> LoadAudioBGAsync(string key)
+        {
+            if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
+            {
+                Managers.LogMessage.Log($"[AddressablesAsync] 从字典读取: {key}");
+                return cached.Result as AudioClip;
+            }
+
+
+            var handle = Addressables.LoadAssetAsync<AudioClip>(key);
+            Managers.LogMessage.Log($"[AddressablesAsync] 从Addressables加载: {key}");
+
+            try
+            {
+                AudioClip result = await handle.Task;
+                _loadedAssets[key] = handle;
+                Managers.AudioManager.PlayBGM(result);
+                return result;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[AddressablesAsync] 加载失败: {key}\n{e}");
+                return null;
+            }
+
+        }
+
+        /// <summary>
+        /// 加载角色对话音频专用
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public async Task<AudioClip> LoadAudioVoiceAsync(string key)
+        {
+            if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
+            {
+                Managers.LogMessage.Log($"[AddressablesAsync] 从字典读取: {key}");
+                return cached.Result as AudioClip;
+            }
+
+
+            var handle = Addressables.LoadAssetAsync<AudioClip>(key);
+            Managers.LogMessage.Log($"[AddressablesAsync] 从Addressables加载: {key}");
+
+            try
+            {
+                AudioClip result = await handle.Task;
+                _loadedAssets[key] = handle;
+                Managers.AudioManager.PlayVoice(result);
+                return result;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[AddressablesAsync] 加载失败: {key}\n{e}");
+                return null;
+            }
+
+        }
+
+
+        /// <summary>
+        /// 加载物体专用
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public async Task<GameObject> LoadGameobjectAsync(string key)
+        {
+            if (_loadedAssets.TryGetValue(key, out var cached) && cached.IsDone)
+            {
+                Managers.LogMessage.Log($"[AddressablesAsync] 从字典读取: {key}");
+                return cached.Result as GameObject;
+            }
+
+
+            var handle = Addressables.LoadAssetAsync<GameObject>(key);
+            Managers.LogMessage.Log($"[AddressablesAsync] 从Addressables加载: {key}");
+
+            try
+            {
+                GameObject result = await handle.Task;
+                _loadedAssets[key] = handle;
+                return result;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[AddressablesAsync] 加载失败: {key}\n{e}");
+                return null;
+            }
+
+        }
+
 
         /// <summary>
         /// 批量异步加载多个资源，并返回列表
