@@ -11,14 +11,10 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-
 namespace FDIM.Framework
-{
-   
+{ 
     public class ExcelToCSharpEditor : EditorWindow
     {
-
-
         private enum Mode
         {
             Classes,

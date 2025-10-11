@@ -2,16 +2,17 @@
   "name": "com.fdim.framework",
   "version": "1.0.0",
   "unity": "2021.1",
- "description": "A framework for Unity.",
- "dependencies": {
-    "com.unity.addressables": "1.21.19"
+  "description": "A framework for Unity.",
+  "dependencies": {
+    "com.unity.addressables": "1.21.19",
+    "com.code-philosophy.hybridclr": "https://github.com/focus-creative-games/hybridclr_unity.git#upm"
   },
-    
-   "samples": [
+  "samples": [
     {
-     "displayName": "WebsocketDemo",
+      "displayName": "WebsocketDemo",
       "description": "A minimal scene showing how to use Websocket.",
       "path": "Samples~/WebsocketDemo"
     }
   ]
 }
+
