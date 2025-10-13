@@ -9,10 +9,15 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace FDIM.Framework
 {
     /// <summary>
-    /// 运行时从远程 Catalog 自动全量下载 Addressables 资源
+    /// 运行时从远程 Catalog 下载 Addressables 资源
+    /// 只负责下载资源，不涉及 DLL 热更逻辑
     /// </summary>
     public class AddressablesDownloaderRemoteCatalog : SingletonPatternBase<AddressablesDownloaderRemoteCatalog>
     {
+        /// <summary>
+        /// 下载远程 Catalog 中更新的资源
+        /// progressCallback [0~1] 实时进度
+        /// </summary>
         public async Task DownloadUpdatedFromRemoteCatalogAsync(string catalogUrl, Action<float> progressCallback = null)
         {
             try
@@ -45,7 +50,7 @@ namespace FDIM.Framework
 
                 // 4️⃣ 获取所有需要下载的资源 keys
                 var keys = updatedLocators.SelectMany(l => l.Keys).ToList();
-                Debug.Log($"[AddressablesDownloaderRemoteCatalog] 需要检查的资源数量: {keys.Count}");
+                Debug.Log($"[AddressablesDownloaderRemoteCatalog] 需要下载的资源数量: {keys.Count}");
 
                 long totalSize = 0;
                 var keySizes = new Dictionary<object, long>();
@@ -73,23 +78,19 @@ namespace FDIM.Framework
                     long keySize = keySizes[key];
                     if (keySize > 0)
                     {
-                        Debug.Log($"[AddressablesDownloaderRemoteCatalog] 下载更新资源: {key} ({keySize / 1024f:F1} KB)");
+                        Debug.Log($"[AddressablesDownloaderRemoteCatalog] 下载资源: {key} ({keySize / 1024f:F1} KB)");
 
                         var downloadHandle = Addressables.DownloadDependenciesAsync(key, true);
 
-                        // 绑定实时进度
                         while (!downloadHandle.IsDone)
                         {
                             progressCallback?.Invoke((downloadedSize + (long)(downloadHandle.PercentComplete * keySize)) / (float)totalSize);
                             await Task.Yield();
                         }
 
-                        // 完成后累加
+                        await downloadHandle.Task;
                         downloadedSize += keySize;
                         progressCallback?.Invoke((float)downloadedSize / totalSize);
-
-                        // 确保完成状态
-                        await downloadHandle.Task;
                     }
                     else
                     {
@@ -98,13 +99,12 @@ namespace FDIM.Framework
                     }
                 }
 
-                Debug.Log("[AddressablesDownloaderRemoteCatalog] 更新资源下载完成");
+                Debug.Log("[AddressablesDownloaderRemoteCatalog] 所有资源下载完成");
             }
             catch (Exception e)
             {
                 Debug.LogError($"[AddressablesDownloaderRemoteCatalog] 下载异常: {e}");
             }
         }
-
     }
 }
