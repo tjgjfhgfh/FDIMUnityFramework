@@ -40,9 +40,60 @@ namespace FDIM.Framework
             return t;
         }
 
+
+        public static Transform SetPositionX(this Transform t, float x)
+        {
+            Vector3 pos = t.position;
+            pos.x = x;
+            t.position = pos;
+            return t;
+        }
+
+        public static Transform SetPositionY(this Transform t, float y)
+        {
+            Vector3 pos = t.position;
+            pos.y = y;
+            t.position = pos;
+            return t;
+        }
+
+        public static Transform SetPositionZ(this Transform t, float z)
+        {
+            Vector3 pos = t.position;
+            pos.z = z;
+            t.position = pos;
+            return t;
+        }
+
         public static Transform SetLocalPositionEx(this Transform t, Vector3 pos)
         {
             t.localPosition = pos;
+            return t;
+        }
+
+
+
+        public static Transform SetLocalPositioX(this Transform t, float x)
+        {
+            Vector3 localPos = t.localPosition;
+            localPos.x = x;
+            t.localPosition = localPos;
+            return t;
+        }
+
+        public static Transform SetLocalPositioY(this Transform t, float y)
+        {
+            Vector3 localPos = t.localPosition;
+            localPos.y = y;
+            t.localPosition = localPos;
+            return t;
+        }
+
+        public static Transform SetLocalPositioZ(this Transform t, float z)
+        {
+            Vector3 localPos = t.localPosition;
+            localPos.z = z;
+            t.localPosition = localPos;
             return t;
         }
 
@@ -52,9 +103,69 @@ namespace FDIM.Framework
             return t;
         }
 
+        public static Transform SetEulerAngles(this Transform t, Vector3 eulerAngles)
+        {
+            t.eulerAngles = eulerAngles;
+            return t;
+        }
+
+        public static Transform SetEulerAnglesX(this Transform t, float x)
+        {
+            Vector3 eulerAngles = t.eulerAngles;
+            eulerAngles.x = x;
+            t.eulerAngles = eulerAngles;
+            return t;
+        }
+
+        public static Transform SetEulerAnglesY(this Transform t, float y)
+        {
+            Vector3 eulerAngles = t.eulerAngles;
+            eulerAngles.y = y;
+            t.eulerAngles = eulerAngles;
+            return t;
+        }
+
+        public static Transform SetEulerAnglesZ(this Transform t, float z)
+        {
+            Vector3 eulerAngles = t.eulerAngles;
+            eulerAngles.z = z;
+            t.eulerAngles = eulerAngles;
+            return t;
+        }
+
         public static Transform SetLocalRotationEx(this Transform t, Quaternion rot)
         {
             t.localRotation = rot;
+            return t;
+        }
+
+        public static Transform SetLocalEulerAngles(this Transform t, Vector3 eulerAngles)
+        {
+            t.localEulerAngles = eulerAngles;
+            return t;
+        }
+
+        public static Transform SetLocalEulerAnglesX(this Transform t, float x)
+        {
+            Vector3 localEulerAngles = t.localEulerAngles;
+            localEulerAngles.x = x;
+            t.localEulerAngles = localEulerAngles;
+            return t;
+        }
+
+        public static Transform SetLocalEulerAnglesY(this Transform t, float y)
+        {
+            Vector3 localEulerAngles = t.localEulerAngles;
+            localEulerAngles.y = y;
+            t.localEulerAngles = localEulerAngles;
+            return t;
+        }
+
+        public static Transform SetLocalEulerAnglesZ(this Transform t, float z)
+        {
+            Vector3 localEulerAngles = t.localEulerAngles;
+            localEulerAngles.z = z;
+            t.localEulerAngles = localEulerAngles;
             return t;
         }
 
